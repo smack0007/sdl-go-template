@@ -3,60 +3,59 @@ package main
 import (
 	"math"
 	"os"
+	"runtime"
 
-	SDL "github.com/smack0007/sdl-go/sdl"
+	"github.com/smack0007/sdl-go/sdl"
 )
 
 const WINDOW_WIDTH = 1024
 const WINDOW_HEIGHT = 768
-const WINDOW_TITLE = "Snake"
+const WINDOW_TITLE = "Game"
 const DESIRED_FPS = 60
 
-var GAME_TICK_RATE = (uint64)(math.Floor(float64(1000) / float64(DESIRED_FPS)))
+var GAME_TICK_RATE = (uint64)(math.Floor(float64(1000.0) / (float64)(DESIRED_FPS)))
 
 func main() {
+	runtime.LockOSThread()
 	os.Exit(run())
 }
 
 func run() int {
-	if SDL.Init(SDL.INIT_VIDEO) != 0 {
-		SDL.LogError(SDL.LOG_CATEGORY_APPLICATION, "Failed initialize SDL.")
-		return 1
-	}
-	defer SDL.Quit()
+	err := sdl.Init(sdl.INIT_VIDEO)
 
-	SDL.LogSetPriority(SDL.LOG_CATEGORY_APPLICATION, SDL.LOG_PRIORITY_DEBUG)
-
-	var window *SDL.Window
-	var renderer *SDL.Renderer
-	result := SDL.CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, SDL.WINDOW_SHOWN, &window, &renderer)
-
-	if result != 0 {
-		SDL.LogError(SDL.LOG_CATEGORY_APPLICATION, "Failed to create window and renderer.")
+	if err != nil {
+		sdl.LogError(sdl.LOG_CATEGORY_APPLICATION, "Failed initialize SDL.")
 		return 1
 	}
 
-	defer SDL.DestroyWindow(window)
-	defer SDL.DestroyRenderer(renderer)
+	defer sdl.Quit()
 
-	SDL.SetWindowTitle(window, WINDOW_TITLE)
+	window, renderer, err := sdl.CreateWindowAndRenderer(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, sdl.WINDOW_OCCLUDED)
+
+	if err != nil {
+		sdl.LogError(sdl.LOG_CATEGORY_APPLICATION, "Failed to create window and renderer.")
+		return 1
+	}
+
+	defer sdl.DestroyWindow(window)
+	defer sdl.DestroyRenderer(renderer)
 
 	shouldQuit := false
-	event := SDL.Event{}
+	var event sdl.Event
 
-	currentTime := SDL.GetTicks64()
+	currentTime := sdl.GetTicks()
 	lastTime := currentTime
 
 	for !shouldQuit {
-		for SDL.PollEvent(&event) > 0 {
+		for sdl.PollEvent(&event) {
 			switch event.Type() {
 
-			case SDL.QUIT:
+			case sdl.EVENT_QUIT:
 				shouldQuit = true
 			}
 		}
 
-		currentTime = SDL.GetTicks64()
+		currentTime = sdl.GetTicks()
 		elapsedTime := currentTime - lastTime
 
 		if elapsedTime >= GAME_TICK_RATE {
@@ -66,7 +65,7 @@ func run() int {
 			lastTime = currentTime
 		}
 
-		SDL.Delay(1)
+		sdl.Delay(1)
 	}
 
 	return 0
@@ -75,9 +74,9 @@ func run() int {
 func update(elapsedTime float32) {
 }
 
-func draw(renderer *SDL.Renderer) {
-	SDL.SetRenderDrawColor(renderer, 100, 149, 237, 255)
-	SDL.RenderClear(renderer)
+func draw(renderer *sdl.Renderer) {
+	sdl.SetRenderDrawColor(renderer, 100, 149, 237, 255)
+	sdl.RenderClear(renderer)
 
-	SDL.RenderPresent(renderer)
+	sdl.RenderPresent(renderer)
 }
