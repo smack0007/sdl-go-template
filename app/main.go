@@ -10,10 +10,10 @@ import (
 
 const WINDOW_WIDTH = 1024
 const WINDOW_HEIGHT = 768
-const WINDOW_TITLE = "Game"
+const WINDOW_TITLE = "App"
 const DESIRED_FPS = 60
 
-var GAME_TICK_RATE = (uint64)(math.Floor(float64(1000.0) / (float64)(DESIRED_FPS)))
+var TICK_RATE = (uint64)(math.Floor(float64(1000.0) / (float64)(DESIRED_FPS)))
 
 func main() {
 	runtime.LockOSThread()
@@ -58,7 +58,7 @@ func run() int {
 		currentTime = sdl.GetTicks()
 		elapsedTime := currentTime - lastTime
 
-		if elapsedTime >= GAME_TICK_RATE {
+		if elapsedTime >= TICK_RATE {
 			update(float32(elapsedTime) / float32(1000))
 			draw(renderer)
 
